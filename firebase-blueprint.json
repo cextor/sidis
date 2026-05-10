@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["ADMIN", "KAPUS", "SEKRETARIS", "STAFF"] },
+        "avatarUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "MailIncoming": {
+      "title": "Mail Incoming",
+      "description": "Represents an incoming mail/letter.",
+      "type": "object",
+      "properties": {
+        "letterNumber": { "type": "string" },
+        "dateReceived": { "type": "string", "format": "date-time" },
+        "dateOnLetter": { "type": "string", "format": "date-time" },
+        "sender": { "type": "string" },
+        "subject": { "type": "string" },
+        "classification": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "DISPOSED", "COMPLETED", "ARCHIVED"] },
+        "pdfUrl": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["letterNumber", "sender", "subject", "status", "createdBy"]
+    },
+    "MailOutgoing": {
+      "title": "Mail Outgoing",
+      "description": "Represents an outgoing mail/letter.",
+      "type": "object",
+      "properties": {
+        "letterNumber": { "type": "string" },
+        "dateSent": { "type": "string", "format": "date-time" },
+        "recipient": { "type": "string" },
+        "subject": { "type": "string" },
+        "classification": { "type": "string" },
+        "status": { "type": "string", "enum": ["DRAFT", "SENT", "ARCHIVED"] },
+        "pdfUrl": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["letterNumber", "recipient", "subject", "status", "createdBy"]
+    },
+    "Disposition": {
+      "title": "Disposition",
+      "description": "Represents a disposition instruction for a mail.",
+      "type": "object",
+      "properties": {
+        "mailIncomingId": { "type": "string" },
+        "fromId": { "type": "string" },
+        "toId": { "type": "string" },
+        "instruction": { "type": "string" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["PENDING", "READ", "COMPLETED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["mailIncomingId", "fromId", "toId", "instruction", "status"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System notification for users.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["DISPOSITION", "MAIL_INCOMING", "SYSTEM"] },
+        "read": { "type": "boolean" },
+        "link": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "message", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/mailsIncoming/{mailId}": {
+      "schema": "MailIncoming",
+      "description": "Incoming mail records"
+    },
+    "/mailsOutgoing/{mailId}": {
+      "schema": "MailOutgoing",
+      "description": "Outgoing mail records"
+    },
+    "/dispositions/{dispositionId}": {
+      "schema": "Disposition",
+      "description": "Disposition instructions linked to incoming mail"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    }
+  }
+}
