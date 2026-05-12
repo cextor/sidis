@@ -14,6 +14,7 @@ $routes->group('api', function($routes) {
     // Protected routes
     $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->get('users/me', 'Auth::me');
+        $routes->post('users/profile', 'Auth::updateProfile');
         $routes->get('users', 'Auth::index');
         
         $routes->get('mails/incoming', 'MailsIncoming::index');
@@ -25,6 +26,9 @@ $routes->group('api', function($routes) {
         $routes->post('dispositions', 'Dispositions::create');
         $routes->put('dispositions/(:segment)/read', 'Dispositions::markAsRead/$1');
         $routes->put('dispositions/(:segment)/complete', 'Dispositions::markAsComplete/$1');
+
+        $routes->get('notifications', 'NotificationsController::index');
+        $routes->put('notifications/read', 'NotificationsController::markAsRead');
 
         
         $routes->get('mails/outgoing', 'MailsOutgoing::index');

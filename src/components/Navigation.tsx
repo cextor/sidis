@@ -33,9 +33,10 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout?: () => void;
+  user: any;
 }
 
-export const Sidebar = ({ isOpen, onClose, onLogout }: SidebarProps) => {
+export const Sidebar = ({ isOpen, onClose, onLogout, user }: SidebarProps) => {
   const location = useLocation();
   const isSettingsPath = location.pathname.startsWith('/settings');
   const [isSettingsOpen, setIsSettingsOpen] = useState(isSettingsPath);
@@ -81,13 +82,17 @@ export const Sidebar = ({ isOpen, onClose, onLogout }: SidebarProps) => {
           <NavItem to="/outgoing" icon={FileUp} label="Surat Keluar" onClick={onClose} />
           <NavItem to="/archive" icon={Archive} label="Arsip" onClick={onClose} />
           
-          <div className="px-4 mt-6 mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">Personal</p>
-          </div>
-          
-          <NavItem to="/settings/users" icon={Users} label="User & Pegawai" onClick={onClose} />
-          <NavItem to="/settings/positions" icon={Briefcase} label="Jabatan" onClick={onClose} />
-          <NavItem to="/settings/organization" icon={Building} label="Organisasi" onClick={onClose} />
+          {user?.role === 'ADMINISTRATOR' && (
+            <>
+              <div className="px-4 mt-6 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 px-1">Personal</p>
+              </div>
+              
+              <NavItem to="/settings/users" icon={Users} label="User & Pegawai" onClick={onClose} />
+              <NavItem to="/settings/positions" icon={Briefcase} label="Jabatan" onClick={onClose} />
+              <NavItem to="/settings/organization" icon={Building} label="Organisasi" onClick={onClose} />
+            </>
+          )}
         </nav>
       </aside>
     </>

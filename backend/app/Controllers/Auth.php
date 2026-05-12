@@ -90,8 +90,60 @@ class Auth extends ResourceController
                 'displayName' => $user['displayName'],
                 'email' => $user['email'],
                 'role' => $user['role'],
-                'avatarUrl' => $user['avatarUrl']
+                'avatarUrl' => $user['avatarUrl'],
+                'nip' => $user['nip'] ?? '',
+                'position_name' => $user['position_name'] ?? '',
+                'golongan' => $user['golongan'] ?? '',
+                'unit_name' => $user['unit_name'] ?? '',
+                'phone' => $user['phone'] ?? '',
+                'address' => $user['address'] ?? ''
             ]
         ]);
+    }
+
+    public function updateProfile()
+    {
+        $header = $this->request->getServer('HTTP_AUTHORIZATION');
+        if(!$header) return $this->failUnauthorized();
+        $token = explode(' ', $header)[1];
+        $key = env('JWT_SECRET');
+        $decoded = JWT::decode($token, new \Firebase\JWT\Key($key, 'HS256'));
+
+        $db = \Config\Database::connect();
+        $uid = $decoded->uid;
+
+        $data = $this->request->getPost();
+        
+        $updateData = [
+            'displayName' => $data['displayName'] ?? '',
+            'nip' => $data['nip'] ?? '',
+            'position_name' => $data['position_name'] ?? '',
+            'golongan' => $data['golongan'] ?? '',
+            'unit_name' => $data['unit_name'] ?? '',
+            'phone' => $data['phone'] ?? '',
+            'address' => $data['address'] ?? '',
+            'updatedAt' => date('Y-m-d H:i:s')
+        ];
+
+        if (!empty($data['email'])) {
+            $updateData['email'] = $data['email'];
+        }
+        if (!empty($data['password'])) {
+            $updateData['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+
+        $file = $this->request->getFile('avatar');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            if ($file->getSize() > 1024 * 1024) {
+                return $this->fail('Ukuran maksimal foto profil adalah 1MB');
+            }
+            $fileName = $file->getRandomName();
+            $file->move(FCPATH . 'uploads/avatars', $fileName);
+            $updateData['avatarUrl'] = '/uploads/avatars/' . $fileName;
+        }
+
+        $db->table('users')->where('id', $uid)->update($updateData);
+
+        return $this->respond(['status' => true, 'message' => 'Profile updated']);
     }
 }

@@ -62,6 +62,17 @@ class Dispositions extends ResourceController
         // Update the mail status to 'DISPOSED' or something if it was PENDING
         $db->table('mails_incoming')->where('id', $data['mailIncomingId'])->update(['status' => 'DISPOSED', 'updatedAt' => date('Y-m-d H:i:s')]);
 
+        // Create notification for recipient
+        $mail = $db->table('mails_incoming')->select('letterNumber, subject')->where('id', $data['mailIncomingId'])->get()->getRowArray();
+        $db->table('notifications')->insert([
+            'id' => uniqid('notif_'),
+            'userId' => $data['toId'],
+            'title' => 'Disposisi Baru: ' . ($mail['letterNumber'] ?? 'Surat'),
+            'message' => 'Anda menerima disposisi baru dengan instruksi: ' . substr($data['instruction'] ?? '', 0, 50) . '...',
+            'isRead' => 0,
+            'createdAt' => date('Y-m-d H:i:s')
+        ]);
+
         return $this->respondCreated(['status' => true, 'message' => 'Disposition inserted', 'id' => $insertData['id']]);
     }
 

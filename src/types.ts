@@ -9,8 +9,14 @@ export interface User {
   uid: string;
   displayName: string;
   email: string;
-  role: UserRole;
+  role: 'ADMINISTRATOR' | 'OPERATOR' | 'PEJABAT';
   avatarUrl?: string;
+  nip?: string;
+  position_name?: string;
+  golongan?: string;
+  unit_name?: string;
+  phone?: string;
+  address?: string;
   createdAt: string;
 }
 

@@ -132,13 +132,15 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Surat Masuk</h2>
           <p className="text-slate-500 text-sm italic">"Keamanan Arsip adalah Kunci Integritas Organisasi"</p>
         </div>
-        <button 
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95 group"
-        >
-          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-          <span>Tambah Surat</span>
-        </button>
+        {user?.role === 'OPERATOR' || user?.role === 'ADMINISTRATOR' ? (
+          <button 
+            onClick={openAddModal}
+            className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95 group"
+          >
+            <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+            <span>Tambah Surat</span>
+          </button>
+        ) : <div />}
       </header>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">

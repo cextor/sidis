@@ -4,6 +4,7 @@ import { Sidebar } from './Navigation.tsx';
 import { Bell, Search, User as UserIcon, LogOut, Menu, Key, Fingerprint } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User } from '../types.ts';
+import api from '../services/api.ts';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,12 +14,31 @@ interface LayoutProps {
 export const Layout = ({ children, user }: LayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await api.get('/notifications');
+      setNotifications(res.data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -31,12 +51,33 @@ export const Layout = ({ children, user }: LayoutProps) => {
     window.location.reload();
   };
 
+  const markNotifsAsRead = async () => {
+    if (notifications.some(n => n.isRead == 0)) {
+      try {
+        await api.put('/notifications/read');
+        fetchNotifications();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const handleNotifClick = () => {
+    setIsNotifOpen(!isNotifOpen);
+    if (!isNotifOpen) {
+      markNotifsAsRead();
+    }
+  };
+
+  const unreadCount = notifications.filter(n => n.isRead == 0).length;
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
         onLogout={handleLogout}
+        user={user}
       />
       
       <main className="flex-1 flex flex-col min-w-0">
@@ -65,19 +106,55 @@ export const Layout = ({ children, user }: LayoutProps) => {
           </div>
           
           <div className="flex items-center gap-3 sm:gap-6">
+            <div className="relative" ref={notifRef}>
+              <button onClick={handleNotifClick} className="relative p-2 text-slate-400 hover:text-slate-900 transition-colors focus:outline-none">
+                <Bell size={18} />
+                {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>}
+              </button>
+              
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 p-0"
+                  >
+                    <div className="p-3 border-b border-slate-50 bg-slate-50">
+                      <p className="text-xs font-black text-slate-900 tracking-tight uppercase">Notifikasi</p>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.length > 0 ? notifications.map(notif => (
+                        <div key={notif.id} className="p-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer">
+                          <p className="text-xs font-bold text-slate-900">{notif.title}</p>
+                          <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{notif.message}</p>
+                          <p className="text-[8px] text-slate-400 font-bold mt-2 uppercase">{new Date(notif.createdAt).toLocaleString('id-ID')}</p>
+                        </div>
+                      )) : (
+                        <div className="p-6 text-center text-slate-400">
+                          <Bell size={24} className="mx-auto mb-2 opacity-50" />
+                          <p className="text-xs font-bold">Tidak ada notifikasi</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            
             <div className="flex items-center gap-2 sm:gap-3 relative" ref={userMenuRef}>
               <div className="text-right hidden md:block">
-                <p className="text-sm font-bold leading-none">{user.displayName}</p>
-                <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">{user.role}</p>
+                <p className="text-xs font-bold leading-none">{user.displayName}</p>
+                <p className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-wider">{user.role}</p>
               </div>
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200 shadow-inner shrink-0 hover:border-slate-400 transition-all focus:outline-none"
+                className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200 shadow-inner shrink-0 hover:border-slate-400 transition-all focus:outline-none"
               >
                 {user.avatarUrl ? (
                   <img src={user.avatarUrl} alt={user.displayName} className="w-full h-full object-cover" />
                 ) : (
-                  <UserIcon size={18} />
+                  <UserIcon size={16} />
                 )}
               </button>
 
