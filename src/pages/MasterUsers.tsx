@@ -20,7 +20,7 @@ export const MasterUsers = () => {
     >
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">Master User & Pegawai</h2>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight italic">User & Pegawai</h2>
           <p className="text-slate-500 text-sm font-medium">Pengelolaan data akun dan profil pegawai</p>
         </div>
         <button className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95">

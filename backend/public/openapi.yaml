@@ -1,0 +1,166 @@
+openapi: 3.0.0
+info:
+  title: SIDIS API Documentation
+  description: API Documentation for Sistem Informasi Disposisi Surat (SIDIS) Backend
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Local API Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: "Login (Access Token)"
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: admin@admin.com
+                password:
+                  type: string
+                  example: 123456
+      responses:
+        '200':
+          description: Successful login
+  /auth/register:
+    post:
+      summary: "Register User"
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+  /users/me:
+    get:
+      summary: "Get Current User"
+      tags: [Users]
+      responses:
+        '200':
+          description: User details
+  /mails/incoming:
+    get:
+      summary: "List Incoming Mails"
+      tags: [Incoming Mails]
+      responses:
+        '200':
+          description: List of incoming mails
+    post:
+      summary: "Create Incoming Mail"
+      tags: [Incoming Mails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created successfully
+  '/mails/incoming/{id}':
+    put:
+      summary: "Update Incoming Mail"
+      tags: [Incoming Mails]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated successfully
+    delete:
+      summary: "Delete Incoming Mail"
+      tags: [Incoming Mails]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted successfully
+  /mails/outgoing:
+    get:
+      summary: "List Outgoing Mails"
+      tags: [Outgoing Mails]
+      responses:
+        '200':
+          description: List of outgoing mails
+    post:
+      summary: "Create Outgoing Mail"
+      tags: [Outgoing Mails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created successfully
+  '/mails/outgoing/{id}':
+    put:
+      summary: "Update Outgoing Mail"
+      tags: [Outgoing Mails]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated successfully
+    delete:
+      summary: "Delete Outgoing Mail"
+      tags: [Outgoing Mails]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted successfully

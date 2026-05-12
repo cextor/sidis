@@ -12,12 +12,17 @@ class UserSeeder extends Seeder
             'id' => 'usr_admin',
             'displayName' => 'Administrator',
             'email' => 'admin@admin.com',
-            'password' => password_hash('password', PASSWORD_DEFAULT),
+            'password' => password_hash('123456', PASSWORD_DEFAULT),
             'role' => 'ADMIN',
             'createdAt' => date('Y-m-d H:i:s'),
             'updatedAt' => date('Y-m-d H:i:s'),
         ];
 
-        $this->db->table('users')->insert($data);
+        $builder = $this->db->table('users');
+        if ($builder->where('email', 'admin@admin.com')->countAllResults(false) > 0) {
+            $builder->update(['password' => $data['password']]);
+        } else {
+            $builder->insert($data);
+        }
     }
 }

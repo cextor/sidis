@@ -17,8 +17,15 @@ $routes->group('api', function($routes) {
         
         $routes->get('mails/incoming', 'MailsIncoming::index');
         $routes->post('mails/incoming', 'MailsIncoming::create');
+        $routes->post('mails/incoming/update/(:segment)', 'MailsIncoming::update/$1');
+        $routes->delete('mails/incoming/(:segment)', 'MailsIncoming::delete/$1');
         
         $routes->get('mails/outgoing', 'MailsOutgoing::index');
         $routes->post('mails/outgoing', 'MailsOutgoing::create');
+        $routes->put('mails/outgoing/(:segment)', 'MailsOutgoing::update/$1');
+        $routes->delete('mails/outgoing/(:segment)', 'MailsOutgoing::delete/$1');
     });
 });
+
+// Handle CORS preflight OPTIONS requests for all routes
+$routes->options('(:any)', static function() {});

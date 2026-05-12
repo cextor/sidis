@@ -34,7 +34,7 @@ export const MasterOrganization = () => {
     >
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">Master Organisasi</h2>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight italic leading-none">Organisasi</h2>
           <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Identitas resmi lembaga & sistem</p>
         </div>
       </header>

@@ -38,4 +38,31 @@ class MailsOutgoing extends ResourceController
 
         return $this->respondCreated(['status' => true, 'message' => 'Mail inserted', 'id' => $insertData['id']]);
     }
+
+    public function update($id = null)
+    {
+        $db = \Config\Database::connect();
+        $data = $this->request->getJSON(true);
+        if (!$data) $data = $this->request->getRawInput();
+
+        $updateData = [
+            'letterNumber' => $data['letterNumber'] ?? '',
+            'dateSent' => $data['dateSent'] ?? null,
+            'recipient' => $data['recipient'] ?? '',
+            'subject' => $data['subject'] ?? '',
+            'classification' => $data['classification'] ?? '',
+            'updatedAt' => date('Y-m-d H:i:s'),
+        ];
+
+        $db->table('mails_outgoing')->where('id', $id)->update($updateData);
+
+        return $this->respond(['status' => true, 'message' => 'Mail updated']);
+    }
+
+    public function delete($id = null)
+    {
+        $db = \Config\Database::connect();
+        $db->table('mails_outgoing')->where('id', $id)->delete();
+        return $this->respondDeleted(['status' => true, 'message' => 'Mail deleted']);
+    }
 }

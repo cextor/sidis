@@ -11,41 +11,17 @@ export const MailDetail = () => {
   const [selectedMail, setSelectedMail] = useState<MailType | null>(null);
 
   useEffect(() => {
-    // Mock fetch mail by ID
-    // In a real app, this would be a Firestore query
-    const mockMails: MailType[] = [
-      {
-        id: '1',
-        letterNumber: '001/UND/2026',
-        dateReceived: '2026-09-12',
-        dateOnLetter: '2026-09-10',
-        sender: 'Dinas Pendidikan DKI',
-        subject: 'Undangan Koordinasi Kurikulum Merdeka',
-        classification: 'PENTING',
-        status: MailStatus.PENDING,
-        createdBy: 'admin',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        letterNumber: '088/SK/KEMENKES/VI/2026',
-        dateReceived: '2026-08-15',
-        dateOnLetter: '2026-08-12',
-        sender: 'Kementerian Kesehatan',
-        subject: 'Pemberitahuan Vaksinasi Tahap III',
-        classification: 'BIASA',
-        status: MailStatus.COMPLETED,
-        createdBy: 'admin',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+    const fetchDetail = async () => {
+      try {
+        const { default: api } = await import('../services/api.ts');
+        const res = await api.get('/mails/incoming');
+        const mail = res.data.find((m: MailType) => m.id === id);
+        if (mail) setSelectedMail(mail);
+      } catch (err) {
+        console.error(err);
       }
-    ];
-
-    const mail = mockMails.find(m => m.id === id);
-    if (mail) {
-      setSelectedMail(mail);
-    }
+    };
+    fetchDetail();
   }, [id]);
 
   if (!selectedMail) {
@@ -85,12 +61,21 @@ export const MailDetail = () => {
             </div>
             <div className="space-y-1">
               <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight uppercase italic leading-tight">Pratinjau Digital</p>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono italic break-all max-w-[200px] mx-auto">DOC_{selectedMail.id.toUpperCase()}.PDF</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono italic break-all max-w-[200px] mx-auto">
+                {selectedMail.pdfUrl ? selectedMail.pdfUrl.split('/').pop() : `DOC_${selectedMail.id.toUpperCase()}.PDF`}
+              </p>
             </div>
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95">
-              <Download size={14} className="sm:w-4 sm:h-4" />
-              Download PDF
-            </button>
+            {selectedMail.pdfUrl ? (
+              <a href={`http://localhost:8080${selectedMail.pdfUrl}`} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95">
+                <Download size={14} className="sm:w-4 sm:h-4" />
+                Lihat PDF
+              </a>
+            ) : (
+              <button disabled className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-200 text-slate-400 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest cursor-not-allowed">
+                <FileDown size={14} className="sm:w-4 sm:h-4" />
+                PDF Tidak Tersedia
+              </button>
+            )}
           </div>
         </div>
 
