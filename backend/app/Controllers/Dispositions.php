@@ -74,4 +74,22 @@ class Dispositions extends ResourceController
         ]);
         return $this->respond(['status' => true, 'message' => 'Marked as read']);
     }
+
+    public function markAsComplete($id = null)
+    {
+        $db = \Config\Database::connect();
+        $disposition = $db->table('dispositions')->where('id', $id)->get()->getRowArray();
+        if ($disposition) {
+            $db->table('dispositions')->where('id', $id)->update([
+                'status' => 'COMPLETED',
+                'updatedAt' => date('Y-m-d H:i:s')
+            ]);
+            $db->table('mails_incoming')->where('id', $disposition['mailIncomingId'])->update([
+                'status' => 'COMPLETED',
+                'updatedAt' => date('Y-m-d H:i:s')
+            ]);
+            return $this->respond(['status' => true, 'message' => 'Marked as completed']);
+        }
+        return $this->failNotFound();
+    }
 }

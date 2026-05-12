@@ -24,6 +24,7 @@ $routes->group('api', function($routes) {
         $routes->get('dispositions', 'Dispositions::index');
         $routes->post('dispositions', 'Dispositions::create');
         $routes->put('dispositions/(:segment)/read', 'Dispositions::markAsRead/$1');
+        $routes->put('dispositions/(:segment)/complete', 'Dispositions::markAsComplete/$1');
 
         
         $routes->get('mails/outgoing', 'MailsOutgoing::index');

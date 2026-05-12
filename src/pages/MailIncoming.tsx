@@ -20,6 +20,14 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
   const [mails, setMails] = useState<MailType[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ALL');
+
+  const tabs = [
+    { id: 'ALL', label: 'Semua Surat' },
+    { id: 'PENDING', label: 'Belum Dibaca' },
+    { id: 'DISPOSED', label: 'Sudah Disposisi' },
+    { id: 'COMPLETED', label: 'Selesai' },
+  ];
 
   const fetchMails = async () => {
     setFetchLoading(true);
@@ -37,11 +45,15 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
     fetchMails();
   }, []);
 
-  const filteredMails = mails.filter(mail => 
-    mail.letterNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mail.sender?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mail.subject?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMails = mails.filter(mail => {
+    const matchesSearch = mail.letterNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mail.sender?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mail.subject?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    if (activeTab === 'ALL') return true;
+    return mail.status === activeTab;
+  });
 
   const openAddModal = () => {
     setSelectedMail(null);
@@ -129,6 +141,23 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
         </button>
       </header>
 
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all duration-300",
+              activeTab === tab.id
+                ? "bg-slate-900 text-white shadow-md"
+                : "bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex flex-wrap gap-4 items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -142,10 +171,6 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
                 className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900 focus:border-transparent outline-none transition-all"
               />
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold hover:bg-white transition-colors bg-slate-50 text-slate-600">
-              <Filter size={14} />
-              <span className="hidden sm:inline">Advanced Filter</span>
-            </button>
           </div>
           <div className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full hidden sm:block">
             Records: {filteredMails.length} Total

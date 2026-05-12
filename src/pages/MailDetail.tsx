@@ -71,6 +71,23 @@ export const MailDetail = () => {
     }
   };
 
+  const handleComplete = async () => {
+    try {
+      const { default: api } = await import('../services/api.ts');
+      const latestDisp = [...dispositions].reverse().find((d: any) => d.toId === user?.uid);
+      if (latestDisp) {
+        await api.put(`/dispositions/${latestDisp.id}/complete`);
+        toast.success('Surat telah diselesaikan');
+        
+        const resDisp = await api.get(`/dispositions?mailIncomingId=${id}`);
+        setDispositions(resDisp.data || []);
+        setSelectedMail(prev => prev ? {...prev, status: MailStatus.COMPLETED} : null);
+      }
+    } catch (err) {
+      toast.error('Gagal menyelesaikan disposisi');
+    }
+  };
+
   if (!selectedMail) {
     return (
       <div className="flex flex-col items-center justify-center p-20 text-slate-400">
@@ -237,11 +254,19 @@ export const MailDetail = () => {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 mt-auto">
-            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white py-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 group">
-              <Share2 size={16} className="group-hover:rotate-12 transition-transform" />
-              Lanjutkan Disposisi
-            </button>
+          <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 mt-auto flex flex-col sm:flex-row gap-3">
+            {dispositions.some((d: any) => d.toId === user?.uid) && !dispositions.some((d: any) => d.fromId === user?.uid) && selectedMail.status !== MailStatus.COMPLETED && (
+              <button onClick={handleComplete} className="w-full flex items-center justify-center gap-3 bg-green-600 text-white py-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-green-700 transition-all shadow-xl shadow-green-600/20 active:scale-95 group">
+                <Check size={16} className="group-hover:scale-110 transition-transform" />
+                Selesai
+              </button>
+            )}
+            {selectedMail.status !== MailStatus.COMPLETED && (
+              <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white py-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 group">
+                <Share2 size={16} className="group-hover:rotate-12 transition-transform" />
+                Lanjutkan Disposisi
+              </button>
+            )}
           </div>
         </div>
       </div>
