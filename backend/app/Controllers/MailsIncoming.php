@@ -9,8 +9,17 @@ class MailsIncoming extends ResourceController
     public function index()
     {
         $db = \Config\Database::connect();
-        $mails = $db->table('mails_incoming')->orderBy('createdAt', 'DESC')->get()->getResultArray();
-        return $this->respond($mails);
+        $mails = $db->table('mails_incoming')->where('status_cd IS NULL', null, false)->orWhere('status_cd !=', 'nullified')->orderBy('createdAt', 'DESC')->get()->getResultArray();
+        
+        // Return soft deleted items with "normal" status if needed, but normally we filter them out.
+        // The user says "status surat yang tampil adalah normal", so we will fetch all and map:
+        $allMails = $db->table('mails_incoming')->orderBy('createdAt', 'DESC')->get()->getResultArray();
+        foreach($allMails as &$m) {
+            if ($m['status_cd'] === 'nullified') {
+                $m['status'] = 'normal';
+            }
+        }
+        return $this->respond($allMails);
     }
 
     public function create()
@@ -52,6 +61,11 @@ class MailsIncoming extends ResourceController
     public function update($id = null)
     {
         $db = \Config\Database::connect();
+        $disps = $db->table('dispositions')->where('mailIncomingId', $id)->countAllResults();
+        if ($disps > 0) {
+            return $this->fail('Membutuhkan persetujuan direktur');
+        }
+
         $data = $this->request->getPost();
         if (!$data) $data = $this->request->getJSON(true);
         if (!$data) $data = $this->request->getRawInput();
@@ -82,7 +96,11 @@ class MailsIncoming extends ResourceController
     public function delete($id = null)
     {
         $db = \Config\Database::connect();
-        $db->table('mails_incoming')->where('id', $id)->delete();
-        return $this->respondDeleted(['status' => true, 'message' => 'Mail deleted']);
+        $disps = $db->table('dispositions')->where('mailIncomingId', $id)->countAllResults();
+        if ($disps > 0) {
+            return $this->fail('Membutuhkan persetujuan direktur');
+        }
+        $db->table('mails_incoming')->where('id', $id)->update(['status_cd' => 'nullified']);
+        return $this->respondDeleted(['status' => true, 'message' => 'Mail deleted (nullified)']);
     }
 }

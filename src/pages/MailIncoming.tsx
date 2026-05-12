@@ -59,8 +59,9 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
       await api.delete(`/mails/incoming/${id}`);
       toast.success('Surat berhasil dihapus');
       fetchMails();
-    } catch (err) {
-      toast.error('Gagal menghapus surat');
+    } catch (err: any) {
+      const msg = err.response?.data?.messages?.error || err.response?.data?.message || 'Gagal menghapus surat';
+      toast.error(msg);
     }
   };
 
@@ -80,8 +81,9 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
       }
       setIsAddModalOpen(false);
       fetchMails();
-    } catch (err) {
-      toast.error('Gagal menyimpan surat');
+    } catch (err: any) {
+      const msg = err.response?.data?.messages?.error || err.response?.data?.message || 'Gagal menyimpan surat';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -313,6 +315,7 @@ export const MailIncoming = ({ user }: MailIncomingProps) => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded w-fit">Upload Surat Masuk (PDF)</label>
                     <input name="file" type="file" accept=".pdf" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:bg-white focus:border-slate-900 transition-all" />
+                    <p className="text-[10px] font-bold text-slate-400 italic">Batas maksimal file adalah 10MB</p>
                   </div>
                 </div>
 

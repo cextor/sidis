@@ -89,18 +89,6 @@ export const Sidebar = ({ isOpen, onClose, onLogout }: SidebarProps) => {
           <NavItem to="/settings/positions" icon={Briefcase} label="Jabatan" onClick={onClose} />
           <NavItem to="/settings/organization" icon={Building} label="Organisasi" onClick={onClose} />
         </nav>
-
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-black italic text-xs">
-              AD
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-black text-slate-900 truncate uppercase mt-0.5 tracking-tight line-height-none">Administrator</p>
-              <p className="text-[9px] font-bold text-slate-400 truncate uppercase tracking-widest mt-0.5">Admin Utama</p>
-            </div>
-          </div>
-        </div>
       </aside>
     </>
   );

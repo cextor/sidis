@@ -11,7 +11,7 @@ class Dispositions extends ResourceController
         $db = \Config\Database::connect();
         $mailId = $this->request->getGet('mailIncomingId');
         
-        $builder = $this->db->table('dispositions d')
+        $builder = $db->table('dispositions d')
             ->select('d.*, f.displayName as fromName, t.displayName as toName')
             ->join('users f', 'f.id = d.fromId', 'left')
             ->join('users t', 't.id = d.toId', 'left')
@@ -60,7 +60,7 @@ class Dispositions extends ResourceController
         $db->table('dispositions')->insert($insertData);
 
         // Update the mail status to 'DISPOSED' or something if it was PENDING
-        $db->table('mails_incoming')->where('id', $data['mailIncomingId'])->update(['status' => 'DISPOSISI', 'updatedAt' => date('Y-m-d H:i:s')]);
+        $db->table('mails_incoming')->where('id', $data['mailIncomingId'])->update(['status' => 'DISPOSED', 'updatedAt' => date('Y-m-d H:i:s')]);
 
         return $this->respondCreated(['status' => true, 'message' => 'Disposition inserted', 'id' => $insertData['id']]);
     }
