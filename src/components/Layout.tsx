@@ -4,7 +4,6 @@ import { Sidebar } from './Navigation.tsx';
 import { Bell, Search, User as UserIcon, LogOut, Menu, Key, Fingerprint } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User } from '../types.ts';
-import { auth } from '../lib/firebase.ts';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,9 +27,8 @@ export const Layout = ({ children, user }: LayoutProps) => {
 
   const handleLogout = () => {
     localStorage.removeItem('sidis_session');
-    auth.signOut().then(() => {
-      window.location.reload();
-    });
+    localStorage.removeItem('token');
+    window.location.reload();
   };
 
   return (
