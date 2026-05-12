@@ -7,6 +7,13 @@ use Firebase\JWT\JWT;
 
 class Auth extends ResourceController
 {
+    public function index()
+    {
+        $db = \Config\Database::connect();
+        $users = $db->table('users')->select('id, displayName, email, role, avatarUrl')->get()->getResultArray();
+        return $this->respond($users);
+    }
+
     public function login()
     {
         $db = \Config\Database::connect();

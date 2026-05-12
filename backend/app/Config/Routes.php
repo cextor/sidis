@@ -14,11 +14,17 @@ $routes->group('api', function($routes) {
     // Protected routes
     $routes->group('', ['filter' => 'auth'], function($routes) {
         $routes->get('users/me', 'Auth::me');
+        $routes->get('users', 'Auth::index');
         
         $routes->get('mails/incoming', 'MailsIncoming::index');
         $routes->post('mails/incoming', 'MailsIncoming::create');
         $routes->post('mails/incoming/update/(:segment)', 'MailsIncoming::update/$1');
         $routes->delete('mails/incoming/(:segment)', 'MailsIncoming::delete/$1');
+
+        $routes->get('dispositions', 'Dispositions::index');
+        $routes->post('dispositions', 'Dispositions::create');
+        $routes->put('dispositions/(:segment)/read', 'Dispositions::markAsRead/$1');
+
         
         $routes->get('mails/outgoing', 'MailsOutgoing::index');
         $routes->post('mails/outgoing', 'MailsOutgoing::create');

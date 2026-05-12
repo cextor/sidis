@@ -1,28 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { FileDown, Download, Share2, ArrowLeft, X, User as UserIcon, Calendar, Info, Clock } from 'lucide-react';
+import { FileDown, Download, Share2, ArrowLeft, X, User as UserIcon, Calendar, Info, Clock, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { MailIncoming as MailType, MailStatus } from '../types.ts';
+import { MailIncoming as MailType, MailStatus, Disposition } from '../types.ts';
+import { useAuth } from '../hooks/useAuth.ts';
+import { toast } from 'react-toastify';
 
 export const MailDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedMail, setSelectedMail] = useState<MailType | null>(null);
+  const [dispositions, setDispositions] = useState<Disposition[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toId, setToId] = useState('');
+  const [instruction, setInstruction] = useState('');
 
   useEffect(() => {
     const fetchDetail = async () => {
       try {
         const { default: api } = await import('../services/api.ts');
-        const res = await api.get('/mails/incoming');
-        const mail = res.data.find((m: MailType) => m.id === id);
+        const [resMail, resDisp, resUsers] = await Promise.all([
+          api.get('/mails/incoming'),
+          api.get(`/dispositions?mailIncomingId=${id}`),
+          api.get('/users')
+        ]);
+        
+        const mail = resMail.data.find((m: MailType) => m.id === id);
         if (mail) setSelectedMail(mail);
+        
+        const disps = resDisp.data || [];
+        setDispositions(disps);
+        setUsers(resUsers.data || []);
+
+        // Mark as read if pending for current user
+        for (const disp of disps) {
+          if (disp.toId === user?.uid && disp.status === 'PENDING') {
+            await api.put(`/dispositions/${disp.id}/read`);
+            disp.status = 'READ';
+            setDispositions([...disps]);
+          }
+        }
       } catch (err) {
         console.error(err);
       }
     };
     fetchDetail();
-  }, [id]);
+  }, [id, user]);
+
+  const handleDispose = async () => {
+    if (!toId) return toast.error('Pilih tujuan disposisi');
+    try {
+      const { default: api } = await import('../services/api.ts');
+      await api.post('/dispositions', {
+        mailIncomingId: id,
+        toId,
+        instruction
+      });
+      toast.success('Disposisi berhasil dikirim');
+      setIsModalOpen(false);
+      setToId('');
+      setInstruction('');
+      // Refresh dispositions
+      const resDisp = await api.get(`/dispositions?mailIncomingId=${id}`);
+      setDispositions(resDisp.data || []);
+    } catch (err) {
+      toast.error('Gagal mengirim disposisi');
+    }
+  };
 
   if (!selectedMail) {
     return (
@@ -150,25 +197,38 @@ export const MailDetail = () => {
                {/* Timeline Line */}
                <div className="absolute left-[9px] top-6 bottom-6 w-px bg-slate-100"></div>
 
-               {[
-                 { date: '12 Sep 2026, 09:12', user: 'Kepala Pusat (John Doe)', action: 'Menerima Surat', note: 'Registrasi Berhasil', icon: 'CHECK' },
-                 { date: '12 Sep 2026, 10:45', user: 'Kepala Pusat (John Doe)', action: 'Disposisi Terkirim', note: 'Segera pelajari dan buatkan review.', icon: 'SEND' },
-                 { date: '12 Sep 2026, 14:20', user: 'Kabag Umum (Ahmad)', action: 'Dokumen Dibaca', note: '-', icon: 'EYE' },
-               ].map((step, idx) => (
+               <div className="relative pl-8 group">
+                   <div className="absolute left-0 top-1 w-[19px] h-[19px] rounded-full bg-white border-2 border-slate-200 group-hover:border-slate-900 transition-all z-10 flex items-center justify-center shadow-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-slate-900 transition-colors"></div>
+                   </div>
+                   <div className="space-y-1">
+                     <div className="flex items-center justify-between">
+                        <p className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{new Date(selectedMail.createdAt).toLocaleString('id-ID')}</p>
+                        <span className="text-[8px] font-black text-slate-400 px-1 border border-slate-100 rounded leading-none pt-0.5">TERIMA</span>
+                     </div>
+                     <p className="text-[12px] font-black text-slate-900 tracking-tight leading-tight">Surat Diterima</p>
+                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Sistem</p>
+                   </div>
+                </div>
+
+               {dispositions.map((step: any, idx: number) => (
                  <div key={idx} className="relative pl-8 group">
                    <div className="absolute left-0 top-1 w-[19px] h-[19px] rounded-full bg-white border-2 border-slate-200 group-hover:border-slate-900 transition-all z-10 flex items-center justify-center shadow-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-slate-200 group-hover:bg-slate-900 transition-colors"></div>
                    </div>
                    <div className="space-y-1">
                      <div className="flex items-center justify-between">
-                        <p className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{step.date}</p>
-                        <span className="text-[8px] font-black text-slate-400 px-1 border border-slate-100 rounded leading-none pt-0.5">{step.icon}</span>
+                        <p className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{new Date(step.createdAt).toLocaleString('id-ID')}</p>
+                        <span className={cn(
+                          "text-[8px] font-black px-1 border rounded leading-none pt-0.5",
+                          step.status === 'PENDING' ? "text-orange-500 border-orange-200 bg-orange-50" : "text-green-500 border-green-200 bg-green-50"
+                        )}>{step.status === 'PENDING' ? 'BELUM DIBACA' : 'SUDAH DIBACA'}</span>
                      </div>
-                     <p className="text-[12px] font-black text-slate-900 tracking-tight leading-tight">{step.action}</p>
-                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{step.user}</p>
-                     {step.note !== '-' && (
+                     <p className="text-[12px] font-black text-slate-900 tracking-tight leading-tight">Disposisi ke {step.toName}</p>
+                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Dari: {step.fromName || 'System'}</p>
+                     {step.instruction && (
                        <div className="mt-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-600 italic leading-snug">
-                         "{step.note}"
+                         "{step.instruction}"
                        </div>
                      )}
                    </div>
@@ -178,13 +238,73 @@ export const MailDetail = () => {
           </div>
 
           <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 mt-auto">
-            <button className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white py-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 group">
+            <button onClick={() => setIsModalOpen(true)} className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white py-4 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 group">
               <Share2 size={16} className="group-hover:rotate-12 transition-transform" />
               Lanjutkan Disposisi
             </button>
           </div>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200"
+          >
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Form Disposisi</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Teruskan Ke</label>
+                  <select 
+                    value={toId}
+                    onChange={(e) => setToId(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  >
+                    <option value="">-- Pilih Tujuan --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.displayName} ({u.role})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Instruksi / Catatan</label>
+                  <textarea 
+                    value={instruction}
+                    onChange={(e) => setInstruction(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    placeholder="Masukkan instruksi..."
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-colors"
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={handleDispose}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                >
+                  Kirim Disposisi
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
