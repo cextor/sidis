@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { FileDown, FileUp, CheckCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,25 @@ const StatCard = ({ label, value, icon: Icon, colorClass, trend }: any) => (
 );
 
 export const Dashboard = ({ user }: { user: User }) => {
+  const [stats, setStats] = useState({ incoming: 0, outgoing: 0, completed: 0, pending: 0 });
+  const [recentMails, setRecentMails] = useState<any[]>([]);
+  const [notifs, setNotifs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const { default: api } = await import('../services/api.ts');
+        const res = await api.get('/dashboard');
+        setStats(res.data.stats || { incoming: 0, outgoing: 0, completed: 0, pending: 0 });
+        setRecentMails(res.data.recentMails || []);
+        setNotifs(res.data.notifications || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -37,10 +56,10 @@ export const Dashboard = ({ user }: { user: User }) => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Surat Masuk" value="128" icon={FileDown} colorClass="bg-blue-600" trend={12} />
-        <StatCard label="Surat Keluar" value="84" icon={FileUp} colorClass="bg-purple-600" trend={-5} />
-        <StatCard label="Selesai" value="156" icon={CheckCircle} colorClass="bg-green-600" trend={20} />
-        <StatCard label="Menunggu" value="12" icon={Clock} colorClass="bg-orange-500" />
+        <StatCard label="Surat Masuk" value={stats.incoming} icon={FileDown} colorClass="bg-blue-600" />
+        <StatCard label="Surat Keluar" value={stats.outgoing} icon={FileUp} colorClass="bg-purple-600" />
+        <StatCard label="Selesai" value={stats.completed} icon={CheckCircle} colorClass="bg-green-600" />
+        <StatCard label="Menunggu" value={stats.pending} icon={Clock} colorClass="bg-orange-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -51,20 +70,22 @@ export const Dashboard = ({ user }: { user: User }) => {
           </div>
           
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="group p-4 flex items-center justify-between border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer">
+            {recentMails.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">Belum ada aktivitas terbaru.</div>
+            ) : recentMails.map((mail, idx) => (
+              <div key={idx} className="group p-4 flex items-center justify-between border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:shadow-sm transition-all">
                     <FileDown size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">Surat Masuk - Dinas Pendidikan</p>
-                    <p className="text-xs text-slate-500">Mengenai: Undangan Rapat Koordinasi Tahunan...</p>
+                    <p className="text-sm font-semibold text-slate-900">{mail.letterNumber || 'Surat Masuk'}</p>
+                    <p className="text-xs text-slate-500">{mail.subject}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-mono text-slate-400">14:2{i} WIB</p>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold uppercase tracking-wider">Menunggu</span>
+                  <p className="text-xs font-mono text-slate-400">{new Date(mail.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold uppercase tracking-wider">{mail.status}</span>
                 </div>
               </div>
             ))}
@@ -74,11 +95,13 @@ export const Dashboard = ({ user }: { user: User }) => {
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-900 tracking-tight">Notifikasi Penting</h3>
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-4 bg-white rounded-xl border-l-4 border-l-orange-500 border border-slate-200 shadow-sm">
-                <p className="text-xs font-bold text-orange-600 uppercase font-mono mb-1">Disposisi Baru</p>
-                <p className="text-sm text-slate-900 font-medium leading-snug">Anda mendapat disposisi dari Kepala Pusat untuk Surat No: 123/IX/2026</p>
-                <p className="text-[10px] text-slate-400 mt-2">2 jam yang lalu</p>
+            {notifs.length === 0 ? (
+              <div className="p-4 text-center text-slate-400 text-xs">Tidak ada notifikasi penting.</div>
+            ) : notifs.map((n, idx) => (
+              <div key={idx} className="p-4 bg-white rounded-xl border-l-4 border-l-orange-500 border border-slate-200 shadow-sm">
+                <p className="text-xs font-bold text-orange-600 uppercase font-mono mb-1">{n.title || 'Pemberitahuan'}</p>
+                <p className="text-sm text-slate-900 font-medium leading-snug">{n.message}</p>
+                <p className="text-[10px] text-slate-400 mt-2">{new Date(n.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             ))}
           </div>

@@ -9,7 +9,7 @@ class MailsOutgoing extends ResourceController
     public function index()
     {
         $db = \Config\Database::connect();
-        $mails = $db->table('mails_outgoing')->orderBy('createdAt', 'DESC')->get()->getResultArray();
+        $mails = $db->table('mails_outgoing')->select('*, id_mails_outgoing as id')->orderBy('createdAt', 'DESC')->get()->getResultArray();
         return $this->respond($mails);
     }
 
@@ -22,7 +22,6 @@ class MailsOutgoing extends ResourceController
         }
 
         $insertData = [
-            'id' => uniqid('out_'),
             'letterNumber' => $data['letterNumber'] ?? '',
             'dateSent' => $data['dateSent'] ?? null,
             'recipient' => $data['recipient'] ?? '',
@@ -36,7 +35,7 @@ class MailsOutgoing extends ResourceController
 
         $db->table('mails_outgoing')->insert($insertData);
 
-        return $this->respondCreated(['status' => true, 'message' => 'Mail inserted', 'id' => $insertData['id']]);
+        return $this->respondCreated(['status' => true, 'message' => 'Mail inserted', 'id' => $db->insertID()]);
     }
 
     public function update($id = null)
@@ -54,7 +53,7 @@ class MailsOutgoing extends ResourceController
             'updatedAt' => date('Y-m-d H:i:s'),
         ];
 
-        $db->table('mails_outgoing')->where('id', $id)->update($updateData);
+        $db->table('mails_outgoing')->where('id_mails_outgoing', $id)->update($updateData);
 
         return $this->respond(['status' => true, 'message' => 'Mail updated']);
     }
@@ -62,7 +61,7 @@ class MailsOutgoing extends ResourceController
     public function delete($id = null)
     {
         $db = \Config\Database::connect();
-        $db->table('mails_outgoing')->where('id', $id)->delete();
+        $db->table('mails_outgoing')->where('id_mails_outgoing', $id)->delete();
         return $this->respondDeleted(['status' => true, 'message' => 'Mail deleted']);
     }
 }

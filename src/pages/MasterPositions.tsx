@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Briefcase, Plus, Search, Edit, Trash2, Users } from 'lucide-react';
 
 export const MasterPositions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const mockPositions = [
-    { id: '1', title: 'Kepala Pusat', level: 'Eselon II', memberCount: 1 },
-    { id: '2', title: 'Kepala Bagian Umum', level: 'Eselon III', memberCount: 1 },
-    { id: '3', title: 'Kepala Sub Bagian Keuangan', level: 'Eselon IV', memberCount: 3 },
-    { id: '4', title: 'Staf Administrasi', level: 'Staff', memberCount: 12 },
-  ];
+  const [positions, setPositions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPositions = async () => {
+      try {
+        const { default: api } = await import('../services/api.ts');
+        const res = await api.get('/positions');
+        setPositions(res.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchPositions();
+  }, []);
 
   return (
     <motion.div 
@@ -54,7 +62,7 @@ export const MasterPositions = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {mockPositions.map((pos) => (
+              {positions.map((pos) => (
                 <tr key={pos.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

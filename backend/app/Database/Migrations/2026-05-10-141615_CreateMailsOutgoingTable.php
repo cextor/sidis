@@ -9,9 +9,11 @@ class CreateMailsOutgoingTable extends Migration
     public function up()
     {
         $this->forge->addField([
-            'id' => [
-                'type'           => 'VARCHAR',
-                'constraint'     => 100,
+            'id_mails_outgoing' => [
+                'type'           => 'INT',
+                'constraint'     => 11,
+                'unsigned'       => true,
+                'auto_increment' => true,
             ],
             'letterNumber' => [
                 'type'       => 'VARCHAR',
@@ -44,8 +46,9 @@ class CreateMailsOutgoingTable extends Migration
                 'null'       => true,
             ],
             'createdBy' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
             ],
             'createdAt' => [
                 'type' => 'DATETIME',
@@ -56,7 +59,7 @@ class CreateMailsOutgoingTable extends Migration
                 'null' => true,
             ],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addKey('id_mails_outgoing', true);
         $this->forge->createTable('mails_outgoing');
     }
 

@@ -13,9 +13,11 @@ $routes->group('api', function($routes) {
     
     // Protected routes
     $routes->group('', ['filter' => 'auth'], function($routes) {
+        $routes->get('dashboard', 'DashboardController::index');
         $routes->get('users/me', 'Auth::me');
         $routes->post('users/profile', 'Auth::updateProfile');
         $routes->get('users', 'Auth::index');
+        $routes->get('positions', 'PositionsController::index');
         
         $routes->get('mails/incoming', 'MailsIncoming::index');
         $routes->post('mails/incoming', 'MailsIncoming::create');

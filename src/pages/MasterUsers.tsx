@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { UserPlus, Search, Edit, Trash2, Shield, User as UserIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -6,11 +6,20 @@ import { cn } from '@/lib/utils';
 export const MasterUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const mockUsers = [
-    { id: '1', name: 'Dr. H. Ahmad Fauzi, M.Si', username: 'ahmad.fauzi', role: 'admin', position: 'Kepala Bagian Umum', status: 'active' },
-    { id: '2', name: 'Sri Wahyuni, S.E., Ak.', username: 'sri.wahyuni', role: 'user', position: 'Kepala Sub Bagian Keuangan', status: 'active' },
-    { id: '3', name: 'Bambang Susanto, S.Sos', username: 'bambang.s', role: 'user', position: 'Kepala Sub Bagian Kepegawaian', status: 'active' },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { default: api } = await import('../services/api.ts');
+        const res = await api.get('/users');
+        setUsers(res.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
     <motion.div 
@@ -55,26 +64,30 @@ export const MasterUsers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {mockUsers.map((user) => (
+              {users.map((user) => (
                 <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
-                        <UserIcon size={20} />
-                      </div>
+                      {user.avatarUrl ? (
+                        <img src={`http://localhost:8080${user.avatarUrl}`} alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                          <UserIcon size={20} />
+                        </div>
+                      )}
                       <div>
-                        <p className="text-sm font-black text-slate-900">{user.name}</p>
-                        <p className="text-[10px] font-mono font-bold text-slate-400">@{user.username}</p>
+                        <p className="text-sm font-black text-slate-900">{user.displayName}</p>
+                        <p className="text-[10px] font-mono font-bold text-slate-400">{user.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-xs font-bold text-slate-600">{user.position}</p>
+                    <p className="text-xs font-bold text-slate-600">{user.position_name || '-'}</p>
                   </td>
                   <td className="px-6 py-4 text-center">
                     <div className={cn(
                       "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
-                      user.role === 'admin' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                      user.role === 'ADMINISTRATOR' ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
                     )}>
                       <Shield size={10} />
                       {user.role}

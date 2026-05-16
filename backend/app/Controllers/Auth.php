@@ -10,7 +10,7 @@ class Auth extends ResourceController
     public function index()
     {
         $db = \Config\Database::connect();
-        $users = $db->table('users')->select('id, displayName, email, role, avatarUrl')->get()->getResultArray();
+        $users = $db->table('users')->select('id_users as id, displayName, email, role, avatarUrl, position_name')->get()->getResultArray();
         return $this->respond($users);
     }
 
@@ -20,7 +20,7 @@ class Auth extends ResourceController
         $email = $this->request->getVar('email');
         $password = $this->request->getVar('password');
 
-        $user = $db->table('users')->where('email', $email)->get()->getRowArray();
+        $user = $db->table('users')->select('*, id_users as id')->where('email', $email)->get()->getRowArray();
 
         if (!$user) {
             return $this->failNotFound('Email not found');
@@ -58,7 +58,6 @@ class Auth extends ResourceController
     {
         $db = \Config\Database::connect();
         $data = [
-            'id' => uniqid('usr_'),
             'displayName' => $this->request->getVar('displayName'),
             'email' => $this->request->getVar('email'),
             'password' => password_hash((string)$this->request->getVar('password'), PASSWORD_DEFAULT),
@@ -79,7 +78,7 @@ class Auth extends ResourceController
         $decoded = JWT::decode($token, new \Firebase\JWT\Key($key, 'HS256'));
 
         $db = \Config\Database::connect();
-        $user = $db->table('users')->where('id', $decoded->uid)->get()->getRowArray();
+        $user = $db->table('users')->select('*, id_users as id')->where('id_users', $decoded->uid)->get()->getRowArray();
         
         if(!$user) return $this->failNotFound('User not found');
 
@@ -142,7 +141,7 @@ class Auth extends ResourceController
             $updateData['avatarUrl'] = '/uploads/avatars/' . $fileName;
         }
 
-        $db->table('users')->where('id', $uid)->update($updateData);
+        $db->table('users')->where('id_users', $uid)->update($updateData);
 
         return $this->respond(['status' => true, 'message' => 'Profile updated']);
     }

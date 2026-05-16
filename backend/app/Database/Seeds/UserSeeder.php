@@ -10,7 +10,6 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'id' => 'usr_admin',
                 'displayName' => 'Administrator',
                 'email' => 'admin@admin.com',
                 'password' => password_hash('123456', PASSWORD_DEFAULT),
@@ -19,7 +18,6 @@ class UserSeeder extends Seeder
                 'updatedAt' => date('Y-m-d H:i:s'),
             ],
             [
-                'id' => 'usr_humas',
                 'displayName' => 'Humas (Siti)',
                 'email' => 'humas@sidis.com',
                 'password' => password_hash('123456', PASSWORD_DEFAULT),
@@ -28,7 +26,6 @@ class UserSeeder extends Seeder
                 'updatedAt' => date('Y-m-d H:i:s'),
             ],
             [
-                'id' => 'usr_dir',
                 'displayName' => 'Direktur / Kepala Dinas',
                 'email' => 'direktur@sidis.com',
                 'password' => password_hash('123456', PASSWORD_DEFAULT),
@@ -37,7 +34,6 @@ class UserSeeder extends Seeder
                 'updatedAt' => date('Y-m-d H:i:s'),
             ],
             [
-                'id' => 'usr_kabagit',
                 'displayName' => 'Kabag IT (Budi)',
                 'email' => 'kabagit@sidis.com',
                 'password' => password_hash('123456', PASSWORD_DEFAULT),
@@ -46,7 +42,6 @@ class UserSeeder extends Seeder
                 'updatedAt' => date('Y-m-d H:i:s'),
             ],
             [
-                'id' => 'usr_unit_software',
                 'displayName' => 'Kepala Unit Software',
                 'email' => 'software@sidis.com',
                 'password' => password_hash('123456', PASSWORD_DEFAULT),

@@ -120,25 +120,28 @@ export const MailDetail = () => {
         {/* Left Side: Document Preview */}
         <div className="w-full lg:w-5/12 bg-slate-50 p-6 sm:p-8 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200">
           <div className="w-full aspect-[4/5] lg:h-full bg-white rounded-2xl shadow-inner border border-slate-200 p-6 sm:p-10 flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-50 text-blue-600 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-md rotate-3 group-hover:rotate-0 transition-transform">
-              <FileDown size={32} className="sm:w-10 sm:h-10" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-base sm:text-lg font-black text-slate-900 tracking-tight uppercase italic leading-tight">Pratinjau Digital</p>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono italic break-all max-w-[200px] mx-auto">
-                {selectedMail.pdfUrl ? selectedMail.pdfUrl.split('/').pop() : `DOC_${selectedMail.id.toUpperCase()}.PDF`}
-              </p>
-            </div>
             {selectedMail.pdfUrl ? (
-              <a href={`http://localhost:8080${selectedMail.pdfUrl}`} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95">
-                <Download size={14} className="sm:w-4 sm:h-4" />
-                Lihat PDF
-              </a>
+              <div className="w-full space-y-4">
+                <iframe 
+                  src={`http://localhost:8080${selectedMail.pdfUrl}`} 
+                  className="w-full h-[500px] border-0 rounded-xl shadow-inner bg-slate-100"
+                  title="PDF Viewer"
+                />
+                <a href={`http://localhost:8080${selectedMail.pdfUrl}`} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95">
+                  <Download size={14} />
+                  Download / Buka Tab Baru
+                </a>
+              </div>
             ) : (
-              <button disabled className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-200 text-slate-400 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest cursor-not-allowed">
-                <FileDown size={14} className="sm:w-4 sm:h-4" />
-                PDF Tidak Tersedia
-              </button>
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-50 text-blue-600 rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-md rotate-3 group-hover:rotate-0 transition-transform">
+                  <FileDown size={32} className="sm:w-10 sm:h-10" />
+                </div>
+                <button disabled className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-200 text-slate-400 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest cursor-not-allowed">
+                  <FileDown size={14} className="sm:w-4 sm:h-4" />
+                  PDF Tidak Tersedia
+                </button>
+              </div>
             )}
           </div>
         </div>

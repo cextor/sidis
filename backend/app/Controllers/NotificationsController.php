@@ -29,6 +29,7 @@ class NotificationsController extends ResourceController
 
         $db = \Config\Database::connect();
         $notifs = $db->table('notifications')
+            ->select('*, id_notifications as id')
             ->where('userId', $uid)
             ->orderBy('createdAt', 'DESC')
             ->limit(20)

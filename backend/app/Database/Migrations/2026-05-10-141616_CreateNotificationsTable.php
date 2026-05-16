@@ -9,13 +9,16 @@ class CreateNotificationsTable extends Migration
     public function up()
     {
         $this->forge->addField([
-            'id' => [
-                'type'           => 'VARCHAR',
-                'constraint'     => 100,
+            'id_notifications' => [
+                'type'           => 'INT',
+                'constraint'     => 11,
+                'unsigned'       => true,
+                'auto_increment' => true,
             ],
             'userId' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
             ],
             'message' => [
                 'type' => 'TEXT',
@@ -42,7 +45,7 @@ class CreateNotificationsTable extends Migration
                 'null' => true,
             ],
         ]);
-        $this->forge->addKey('id', true);
+        $this->forge->addKey('id_notifications', true);
         $this->forge->createTable('notifications');
     }
 

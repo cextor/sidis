@@ -9,11 +9,11 @@ class MailsIncoming extends ResourceController
     public function index()
     {
         $db = \Config\Database::connect();
-        $mails = $db->table('mails_incoming')->where('status_cd IS NULL', null, false)->orWhere('status_cd !=', 'nullified')->orderBy('createdAt', 'DESC')->get()->getResultArray();
+        $mails = $db->table('mails_incoming')->select('*, id_mails_incoming as id')->where('status_cd IS NULL', null, false)->orWhere('status_cd !=', 'nullified')->orderBy('createdAt', 'DESC')->get()->getResultArray();
         
         // Return soft deleted items with "normal" status if needed, but normally we filter them out.
         // The user says "status surat yang tampil adalah normal", so we will fetch all and map:
-        $allMails = $db->table('mails_incoming')->orderBy('createdAt', 'DESC')->get()->getResultArray();
+        $allMails = $db->table('mails_incoming')->select('*, id_mails_incoming as id')->orderBy('createdAt', 'DESC')->get()->getResultArray();
         foreach($allMails as &$m) {
             if ($m['status_cd'] === 'nullified') {
                 $m['status'] = 'normal';
@@ -38,7 +38,6 @@ class MailsIncoming extends ResourceController
         }
 
         $insertData = [
-            'id' => uniqid('inc_'),
             'letterNumber' => $data['letterNumber'] ?? '',
             'dateReceived' => $data['dateReceived'] ?? date('Y-m-d'),
             'dateOnLetter' => $data['dateOnLetter'] ?? date('Y-m-d'),
@@ -55,7 +54,7 @@ class MailsIncoming extends ResourceController
 
         $db->table('mails_incoming')->insert($insertData);
 
-        return $this->respondCreated(['status' => true, 'message' => 'Mail inserted', 'id' => $insertData['id']]);
+        return $this->respondCreated(['status' => true, 'message' => 'Mail inserted', 'id' => $db->insertID()]);
     }
 
     public function update($id = null)
@@ -88,7 +87,7 @@ class MailsIncoming extends ResourceController
             $updateData['pdfUrl'] = '/uploads/' . $fileName;
         }
 
-        $db->table('mails_incoming')->where('id', $id)->update($updateData);
+        $db->table('mails_incoming')->where('id_mails_incoming', $id)->update($updateData);
 
         return $this->respond(['status' => true, 'message' => 'Mail updated']);
     }
@@ -100,7 +99,7 @@ class MailsIncoming extends ResourceController
         if ($disps > 0) {
             return $this->fail('Membutuhkan persetujuan direktur');
         }
-        $db->table('mails_incoming')->where('id', $id)->update(['status_cd' => 'nullified']);
+        $db->table('mails_incoming')->where('id_mails_incoming', $id)->update(['status_cd' => 'nullified']);
         return $this->respondDeleted(['status' => true, 'message' => 'Mail deleted (nullified)']);
     }
 }
